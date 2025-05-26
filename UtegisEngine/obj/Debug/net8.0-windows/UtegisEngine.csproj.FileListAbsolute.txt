@@ -19,3 +19,4 @@ C:\Users\Home\Desktop\UtegisEngine\UtegisEngine_Form\UtegisEngine\obj\Debug\net8
 C:\Users\Home\Desktop\UtegisEngine\UtegisEngine_Form\UtegisEngine\bin\Debug\net8.0-windows\Newtonsoft.Json.dll
 C:\Users\Home\Desktop\UtegisEngine\UtegisEngine_Form\UtegisEngine\obj\Debug\net8.0-windows\UtegisEngine.csproj.AssemblyReference.cache
 C:\Users\Home\Desktop\UtegisEngine\UtegisEngine_Form\UtegisEngine\obj\Debug\net8.0-windows\UtegisEn.6290BD78.Up2Date
+C:\Users\Home\Desktop\UtegisEngine\UtegisEngine_Form\UtegisEngine\obj\Debug\net8.0-windows\UtegisEngine.EngineInteface.resources

@@ -4,6 +4,9 @@
     <Compile Update="CreateProjectForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="EngineInteface.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Form1.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -1,16 +1,24 @@
-﻿namespace UtegisEngine
+﻿using System;
+using System.IO;
+using System.Drawing;
+using System.Windows.Forms;
+using System.Linq;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+
+namespace UtegisEngine
 {
     partial class StartWindow
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
+        private Button CreateProjectButton;
+        private Panel projectsPanel;
+        private FlowLayoutPanel projectsListPanel;
+        private Label recentProjectsLabel;
+        private Button openProjectButton;
+        private Button showAllProjectsButton;
+        private bool showingAllProjects = false;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -20,24 +28,24 @@
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
         private void InitializeComponent()
         {
             CreateProjectButton = new Button();
+            projectsPanel = new Panel();
+            showAllProjectsButton = new Button();
+            openProjectButton = new Button();
+            projectsListPanel = new FlowLayoutPanel();
+            recentProjectsLabel = new Label();
+            projectsPanel.SuspendLayout();
             SuspendLayout();
             // 
             // CreateProjectButton
             // 
             CreateProjectButton.BackColor = Color.FromArgb(67, 92, 116);
             CreateProjectButton.FlatStyle = FlatStyle.Flat;
-            CreateProjectButton.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            CreateProjectButton.Font = new Font("Segoe UI", 12F);
             CreateProjectButton.ForeColor = Color.White;
-            CreateProjectButton.Location = new Point(463, 195);
+            CreateProjectButton.Location = new Point(394, 417);
             CreateProjectButton.Name = "CreateProjectButton";
             CreateProjectButton.Size = new Size(300, 138);
             CreateProjectButton.TabIndex = 0;
@@ -45,26 +53,277 @@
             CreateProjectButton.UseVisualStyleBackColor = false;
             CreateProjectButton.Click += CreateProjectButton_Click;
             // 
+            // projectsPanel
+            // 
+            projectsPanel.BackColor = Color.FromArgb(34, 54, 74);
+            projectsPanel.Controls.Add(showAllProjectsButton);
+            projectsPanel.Controls.Add(openProjectButton);
+            projectsPanel.Controls.Add(projectsListPanel);
+            projectsPanel.Controls.Add(recentProjectsLabel);
+            projectsPanel.Dock = DockStyle.Left;
+            projectsPanel.ForeColor = Color.White;
+            projectsPanel.Location = new Point(0, 0);
+            projectsPanel.Name = "projectsPanel";
+            projectsPanel.Size = new Size(350, 579);
+            projectsPanel.TabIndex = 1;
+            // 
+            // showAllProjectsButton
+            // 
+            showAllProjectsButton.BackColor = Color.FromArgb(149, 165, 166);
+            showAllProjectsButton.Dock = DockStyle.Bottom;
+            showAllProjectsButton.FlatStyle = FlatStyle.Flat;
+            showAllProjectsButton.Font = new Font("Segoe UI", 8F);
+            showAllProjectsButton.ForeColor = Color.White;
+            showAllProjectsButton.Location = new Point(0, 499);
+            showAllProjectsButton.Name = "showAllProjectsButton";
+            showAllProjectsButton.Size = new Size(350, 40);
+            showAllProjectsButton.TabIndex = 3;
+            showAllProjectsButton.Text = "Показать все проекты";
+            showAllProjectsButton.UseVisualStyleBackColor = false;
+            showAllProjectsButton.Visible = false;
+            showAllProjectsButton.Click += ShowAllProjectsButton_Click;
+            // 
+            // openProjectButton
+            // 
+            openProjectButton.BackColor = Color.FromArgb(52, 152, 219);
+            openProjectButton.Dock = DockStyle.Bottom;
+            openProjectButton.FlatStyle = FlatStyle.Flat;
+            openProjectButton.Font = new Font("Segoe UI", 9F);
+            openProjectButton.ForeColor = Color.White;
+            openProjectButton.Location = new Point(0, 539);
+            openProjectButton.Name = "openProjectButton";
+            openProjectButton.Size = new Size(350, 40);
+            openProjectButton.TabIndex = 2;
+            openProjectButton.Text = "Открыть проект";
+            openProjectButton.UseVisualStyleBackColor = false;
+            openProjectButton.Click += OpenProjectButton_Click;
+            // 
+            // projectsListPanel
+            // 
+            projectsListPanel.AutoScroll = true;
+            projectsListPanel.Dock = DockStyle.Fill;
+            projectsListPanel.FlowDirection = FlowDirection.TopDown;
+            projectsListPanel.Location = new Point(0, 40);
+            projectsListPanel.Name = "projectsListPanel";
+            projectsListPanel.Padding = new Padding(10, 10, 10, 60);
+            projectsListPanel.Size = new Size(350, 539);
+            projectsListPanel.TabIndex = 1;
+            projectsListPanel.WrapContents = false;
+            // 
+            // recentProjectsLabel
+            // 
+            recentProjectsLabel.Dock = DockStyle.Top;
+            recentProjectsLabel.Font = new Font("Segoe UI", 12F);
+            recentProjectsLabel.Location = new Point(0, 0);
+            recentProjectsLabel.Name = "recentProjectsLabel";
+            recentProjectsLabel.Padding = new Padding(10, 0, 0, 0);
+            recentProjectsLabel.Size = new Size(350, 40);
+            recentProjectsLabel.TabIndex = 0;
+            recentProjectsLabel.Text = "Последние проекты";
+            recentProjectsLabel.TextAlign = ContentAlignment.MiddleLeft;
+            // 
             // StartWindow
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(24, 44, 64);
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(727, 579);
+            Controls.Add(projectsPanel);
             Controls.Add(CreateProjectButton);
             Name = "StartWindow";
             Text = "UtegisEngine";
+            Load += StartWindow_Load;
+            projectsPanel.ResumeLayout(false);
             ResumeLayout(false);
         }
-
-        #endregion
-
-        private Button CreateProjectButton;
 
         private void CreateProjectButton_Click(object sender, EventArgs e)
         {
             var createProjectForm = new CreateProjectForm();
-            createProjectForm.ShowDialog();
+            if (createProjectForm.ShowDialog() == DialogResult.OK)
+            {
+                LoadProjectsList();
+            }
+        }
+
+        private void StartWindow_Load(object sender, EventArgs e)
+        {
+            LoadProjectsList();
+        }
+
+        private void LoadProjectsList()
+        {
+            projectsListPanel.Controls.Clear();
+
+            string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string projectsFile = Path.Combine(documentsPath, "UtegisEngine", "Projects.utall");
+
+            if (File.Exists(projectsFile))
+            {
+                string json = File.ReadAllText(projectsFile);
+                var projectsData = JsonConvert.DeserializeObject<ProjectsData>(json);
+
+                if (projectsData?.Projects != null)
+                {
+                    var sortedProjects = projectsData.Projects.Values
+                        .OrderByDescending(p => p.LastOpened)
+                        .ToList();
+
+                    showAllProjectsButton.Visible = sortedProjects.Count > 4;
+                    int projectsToShow = showingAllProjects ? sortedProjects.Count : Math.Min(4, sortedProjects.Count);
+
+                    for (int i = 0; i < projectsToShow; i++)
+                    {
+                        AddProjectToPanel(sortedProjects[i]);
+                    }
+                }
+            }
+        }
+
+        private void AddProjectToPanel(ProjectSettings project)
+        {
+            var projectPanel = new Panel
+            {
+                BackColor = Color.FromArgb(44, 64, 84),
+                Margin = new Padding(5),
+                Size = new Size(320, 80)
+            };
+
+            var nameLabel = new Label
+            {
+                Text = project.NameProject,
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                ForeColor = Color.White,
+                Location = new Point(10, 10),
+                AutoSize = true
+            };
+
+            var pathLabel = new Label
+            {
+                Text = project.LocateProject,
+                Font = new Font("Segoe UI", 8F),
+                ForeColor = Color.LightGray,
+                Location = new Point(10, 35),
+                AutoSize = true,
+                MaximumSize = new Size(300, 0)
+            };
+
+            var loadButton = new Button
+            {
+                Text = "Загрузить",
+                BackColor = Color.FromArgb(39, 174, 96),
+                FlatStyle = FlatStyle.Flat,
+                ForeColor = Color.White,
+                Size = new Size(100, 30),
+                Location = new Point(200, 40),
+                Tag = project.LocateProject
+            };
+            loadButton.Click += LoadButton_Click;
+
+            projectPanel.Controls.Add(nameLabel);
+            projectPanel.Controls.Add(pathLabel);
+            projectPanel.Controls.Add(loadButton);
+
+            projectsListPanel.Controls.Add(projectPanel);
+        }
+
+        private void OpenProjectButton_Click(object sender, EventArgs e)
+        {
+            using (var folderDialog = new FolderBrowserDialog())
+            {
+                folderDialog.Description = "Выберите папку с проектом UtegisEngine";
+                if (folderDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string projectSettingsPath = Path.Combine(folderDialog.SelectedPath, "ProjectSettings.uts");
+                    if (File.Exists(projectSettingsPath))
+                    {
+                        try
+                        {
+                            string json = File.ReadAllText(projectSettingsPath);
+                            var project = JsonConvert.DeserializeObject<ProjectSettings>(json);
+                            project.LastOpened = DateTime.Now;
+
+                            UpdateProjectInList(project);
+                            LoadProject(project);
+                            LoadProjectsList();
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"Ошибка при загрузке проекта: {ex.Message}", "Ошибка",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Выбранная папка не содержит проекта UtegisEngine",
+                            "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                }
+            }
+        }
+
+        private void ShowAllProjectsButton_Click(object sender, EventArgs e)
+        {
+            showingAllProjects = !showingAllProjects;
+            showAllProjectsButton.Text = showingAllProjects ? "Скрыть старые проекты" : "Показать все проекты";
+            LoadProjectsList();
+        }
+
+        private void UpdateProjectInList(ProjectSettings project)
+        {
+            string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string projectsFile = Path.Combine(documentsPath, "UtegisEngine", "Projects.utall");
+
+            ProjectsData projectsData = new ProjectsData();
+
+            if (File.Exists(projectsFile))
+            {
+                string json = File.ReadAllText(projectsFile);
+                projectsData = JsonConvert.DeserializeObject<ProjectsData>(json) ?? new ProjectsData();
+            }
+
+            projectsData.Projects[project.NameProject] = project;
+            string updatedJson = JsonConvert.SerializeObject(projectsData, Formatting.Indented);
+            File.WriteAllText(projectsFile, updatedJson);
+        }
+
+        private void LoadButton_Click(object sender, EventArgs e)
+        {
+            var button = sender as Button;
+            string projectPath = button.Tag as string;
+
+            if (Directory.Exists(projectPath))
+            {
+                try
+                {
+                    string projectSettingsPath = Path.Combine(projectPath, "ProjectSettings.uts");
+                    string json = File.ReadAllText(projectSettingsPath);
+                    var project = JsonConvert.DeserializeObject<ProjectSettings>(json);
+                    project.LastOpened = DateTime.Now;
+
+                    UpdateProjectInList(project);
+                    LoadProject(project);
+                    LoadProjectsList();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка при загрузке проекта: {ex.Message}", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Проект не найден по указанному пути",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void LoadProject(ProjectSettings project)
+        {
+            MessageBox.Show($"Проект '{project.NameProject}' успешно загружен!\n" +
+                $"Расположение: {project.LocateProject}\n" +
+                $"Новые функции: {(project.NewFunctions ? "Да" : "Нет")}",
+                "Проект загружен", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }

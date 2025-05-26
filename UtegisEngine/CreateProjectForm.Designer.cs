@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using Newtonsoft.Json;
@@ -12,19 +11,17 @@ namespace UtegisEngine
         public string NameProject { get; set; }
         public string LocateProject { get; set; }
         public bool NewFunctions { get; set; }
+        public DateTime LastOpened { get; set; } = DateTime.Now;
     }
 
     public class ProjectsData
     {
         public Dictionary<string, ProjectSettings> Projects { get; set; } = new Dictionary<string, ProjectSettings>();
     }
+
     partial class CreateProjectForm
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
-
         private TextBox projectNameTextBox;
         private TextBox locationTextBox;
         private Button browseButton;
@@ -36,10 +33,6 @@ namespace UtegisEngine
         private Panel contentPanel;
         private Panel footerPanel;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -49,12 +42,6 @@ namespace UtegisEngine
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
         private void InitializeComponent()
         {
             this.headerPanel = new System.Windows.Forms.Panel();
@@ -71,9 +58,8 @@ namespace UtegisEngine
             this.contentPanel.SuspendLayout();
             this.footerPanel.SuspendLayout();
             this.SuspendLayout();
-            // 
+
             // headerPanel
-            // 
             this.headerPanel.BackColor = System.Drawing.Color.FromArgb(44, 62, 80);
             this.headerPanel.Controls.Add(this.titleLabel);
             this.headerPanel.Dock = System.Windows.Forms.DockStyle.Top;
@@ -82,9 +68,8 @@ namespace UtegisEngine
             this.headerPanel.Name = "headerPanel";
             this.headerPanel.Size = new System.Drawing.Size(600, 60);
             this.headerPanel.TabIndex = 0;
-            // 
+
             // titleLabel
-            // 
             this.titleLabel.AutoSize = true;
             this.titleLabel.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.titleLabel.Location = new System.Drawing.Point(20, 18);
@@ -92,9 +77,8 @@ namespace UtegisEngine
             this.titleLabel.Size = new System.Drawing.Size(181, 25);
             this.titleLabel.TabIndex = 0;
             this.titleLabel.Text = "Создать новый проект";
-            // 
+
             // contentPanel
-            // 
             this.contentPanel.BackColor = System.Drawing.Color.FromArgb(52, 73, 94);
             this.contentPanel.Controls.Add(this.useLatestFeaturesCheckBox);
             this.contentPanel.Controls.Add(this.browseButton);
@@ -107,9 +91,8 @@ namespace UtegisEngine
             this.contentPanel.Padding = new System.Windows.Forms.Padding(20);
             this.contentPanel.Size = new System.Drawing.Size(600, 240);
             this.contentPanel.TabIndex = 1;
-            // 
+
             // useLatestFeaturesCheckBox
-            // 
             this.useLatestFeaturesCheckBox.AutoSize = true;
             this.useLatestFeaturesCheckBox.Checked = true;
             this.useLatestFeaturesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -120,9 +103,8 @@ namespace UtegisEngine
             this.useLatestFeaturesCheckBox.TabIndex = 3;
             this.useLatestFeaturesCheckBox.Text = "Использовать новейшие функции движка";
             this.useLatestFeaturesCheckBox.UseVisualStyleBackColor = true;
-            // 
+
             // browseButton
-            // 
             this.browseButton.BackColor = System.Drawing.Color.FromArgb(41, 128, 185);
             this.browseButton.FlatAppearance.BorderSize = 0;
             this.browseButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -135,9 +117,8 @@ namespace UtegisEngine
             this.browseButton.Text = "Обзор...";
             this.browseButton.UseVisualStyleBackColor = false;
             this.browseButton.Click += new System.EventHandler(this.BrowseButton_Click);
-            // 
+
             // locationTextBox
-            // 
             this.locationTextBox.BackColor = System.Drawing.Color.FromArgb(60, 84, 107);
             this.locationTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.locationTextBox.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
@@ -146,9 +127,8 @@ namespace UtegisEngine
             this.locationTextBox.Name = "locationTextBox";
             this.locationTextBox.Size = new System.Drawing.Size(420, 25);
             this.locationTextBox.TabIndex = 1;
-            // 
+
             // projectNameTextBox
-            // 
             this.projectNameTextBox.BackColor = System.Drawing.Color.FromArgb(60, 84, 107);
             this.projectNameTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.projectNameTextBox.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
@@ -158,9 +138,8 @@ namespace UtegisEngine
             this.projectNameTextBox.PlaceholderText = "Название проекта";
             this.projectNameTextBox.Size = new System.Drawing.Size(527, 25);
             this.projectNameTextBox.TabIndex = 0;
-            // 
+
             // footerPanel
-            // 
             this.footerPanel.BackColor = System.Drawing.Color.FromArgb(44, 62, 80);
             this.footerPanel.Controls.Add(this.cancelButton);
             this.footerPanel.Controls.Add(this.createButton);
@@ -170,9 +149,8 @@ namespace UtegisEngine
             this.footerPanel.Padding = new System.Windows.Forms.Padding(10);
             this.footerPanel.Size = new System.Drawing.Size(600, 60);
             this.footerPanel.TabIndex = 2;
-            // 
+
             // cancelButton
-            // 
             this.cancelButton.BackColor = System.Drawing.Color.FromArgb(192, 57, 43);
             this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cancelButton.FlatAppearance.BorderSize = 0;
@@ -186,9 +164,8 @@ namespace UtegisEngine
             this.cancelButton.Text = "Отмена";
             this.cancelButton.UseVisualStyleBackColor = false;
             this.cancelButton.Click += new System.EventHandler(this.CancelButton_Click);
-            // 
+
             // createButton
-            // 
             this.createButton.BackColor = System.Drawing.Color.FromArgb(39, 174, 96);
             this.createButton.FlatAppearance.BorderSize = 0;
             this.createButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -201,9 +178,8 @@ namespace UtegisEngine
             this.createButton.Text = "Создать";
             this.createButton.UseVisualStyleBackColor = false;
             this.createButton.Click += new System.EventHandler(this.CreateButton_Click);
-            // 
+
             // CreateProjectForm
-            // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(600, 360);
@@ -223,8 +199,6 @@ namespace UtegisEngine
             this.footerPanel.ResumeLayout(false);
             this.ResumeLayout(false);
         }
-
-        #endregion
 
         private void BrowseButton_Click(object sender, EventArgs e)
         {
@@ -256,7 +230,6 @@ namespace UtegisEngine
                 return;
             }
 
-            // Check if project directory already exists
             string fullPath = Path.Combine(locationTextBox.Text, projectNameTextBox.Text);
             if (Directory.Exists(fullPath))
             {
@@ -265,41 +238,33 @@ namespace UtegisEngine
                 return;
             }
 
-            // Set the final path
             locationTextBox.Text = fullPath;
-
-            // Create project structure
             CreateProjectStructure();
-
             this.DialogResult = DialogResult.OK;
             this.Close();
         }
+
         private void CreateProjectStructure()
         {
             try
             {
-                // Create main project directory
                 Directory.CreateDirectory(locationTextBox.Text);
-
-                // Create subdirectories
                 Directory.CreateDirectory(Path.Combine(locationTextBox.Text, "Editor"));
                 Directory.CreateDirectory(Path.Combine(locationTextBox.Text, "Assets"));
                 Directory.CreateDirectory(Path.Combine(locationTextBox.Text, "Export"));
 
-                // Create ProjectSettings.uts file
                 var settings = new ProjectSettings
                 {
                     NameProject = projectNameTextBox.Text,
                     LocateProject = locationTextBox.Text,
-                    NewFunctions = useLatestFeaturesCheckBox.Checked
+                    NewFunctions = useLatestFeaturesCheckBox.Checked,
+                    LastOpened = DateTime.Now
                 };
 
                 string settingsJson = JsonConvert.SerializeObject(settings, Formatting.Indented);
                 File.WriteAllText(Path.Combine(locationTextBox.Text, "ProjectSettings.uts"), settingsJson);
 
-                // Update or create Projects.utall in Documents
                 UpdateProjectsList(settings);
-
                 MessageBox.Show("Проект успешно создан!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
@@ -307,6 +272,7 @@ namespace UtegisEngine
                 MessageBox.Show($"Ошибка при создании проекта: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
         private void UpdateProjectsList(ProjectSettings newProject)
         {
             string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -315,23 +281,18 @@ namespace UtegisEngine
 
             ProjectsData projectsData = new ProjectsData();
 
-            // Create UtegisEngine directory if it doesn't exist
             if (!Directory.Exists(engineFolder))
             {
                 Directory.CreateDirectory(engineFolder);
             }
 
-            // Load existing projects if file exists
             if (File.Exists(projectsFile))
             {
                 string json = File.ReadAllText(projectsFile);
                 projectsData = JsonConvert.DeserializeObject<ProjectsData>(json) ?? new ProjectsData();
             }
 
-            // Add or update the project
             projectsData.Projects[newProject.NameProject] = newProject;
-
-            // Save back to file
             string updatedJson = JsonConvert.SerializeObject(projectsData, Formatting.Indented);
             File.WriteAllText(projectsFile, updatedJson);
         }
@@ -342,5 +303,4 @@ namespace UtegisEngine
             this.Close();
         }
     }
-
 }

@@ -3,24 +3,16 @@ using System.IO;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using UtegisEngine.Engine.Core.Models;
 
 namespace UtegisEngine
 {
-    public class ProjectSettings
-    {
-        public string NameProject { get; set; }
-        public string LocateProject { get; set; }
-        public bool NewFunctions { get; set; }
-        public DateTime LastOpened { get; set; } = DateTime.Now;
-    }
-
-    public class ProjectsData
-    {
-        public Dictionary<string, ProjectSettings> Projects { get; set; } = new Dictionary<string, ProjectSettings>();
-    }
 
     partial class CreateProjectForm
     {
+        private readonly ProjectManager _projectManager = new ProjectManager();
+        private readonly FileSystemService _fileSystemService = new FileSystemService();
+
         private System.ComponentModel.IContainer components = null;
         private TextBox projectNameTextBox;
         private TextBox locationTextBox;
@@ -35,9 +27,11 @@ namespace UtegisEngine
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing)
             {
-                components.Dispose();
+                _projectManager.Dispose();
+                _fileSystemService.Dispose();
+                components?.Dispose();
             }
             base.Dispose(disposing);
         }
@@ -202,46 +196,60 @@ namespace UtegisEngine
 
         private void BrowseButton_Click(object sender, EventArgs e)
         {
-            using (var folderBrowserDialog = new FolderBrowserDialog())
+            var selectedPath = _fileSystemService.SelectFolder("Выберите папку для проекта");
+            if (!string.IsNullOrEmpty(selectedPath))
             {
-                folderBrowserDialog.Description = "Выберите папку для проекта";
-                folderBrowserDialog.ShowNewFolderButton = true;
-
-                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
-                {
-                    locationTextBox.Text = folderBrowserDialog.SelectedPath;
-                }
+                locationTextBox.Text = selectedPath;
             }
         }
 
         private void CreateButton_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(projectNameTextBox.Text))
+            string projectName = projectNameTextBox.Text ?? string.Empty;
+            string location = locationTextBox.Text ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(projectName))
             {
                 MessageBox.Show("Пожалуйста, укажите название проекта", "Ошибка",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(locationTextBox.Text))
+            if (string.IsNullOrWhiteSpace(location))
             {
                 MessageBox.Show("Пожалуйста, укажите расположение проекта", "Ошибка",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            string fullPath = Path.Combine(locationTextBox.Text, projectNameTextBox.Text);
-            if (Directory.Exists(fullPath))
+            string fullPath = Path.Combine(location, projectName);
+            if (_fileSystemService.DirectoryExists(fullPath))
             {
                 MessageBox.Show("Папка проекта уже существует. Выберите другое имя или расположение.",
                     "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            locationTextBox.Text = fullPath;
-            CreateProjectStructure();
-            this.DialogResult = DialogResult.OK;
-            this.Close();
+            try
+            {
+                var settings = new ProjectSettings
+                {
+                    NameProject = projectName,
+                    LocateProject = fullPath,
+                    NewFunctions = useLatestFeaturesCheckBox.Checked
+                };
+
+                _projectManager.CreateProjectStructure(settings);
+                MessageBox.Show("Проект успешно создан!", "Успех",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                DialogResult = DialogResult.OK;
+                Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при создании проекта: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void CreateProjectStructure()

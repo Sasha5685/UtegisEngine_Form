@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.Linq;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using UtegisEngine.Engine.Core.Models;
 
 namespace UtegisEngine
 {
@@ -17,13 +18,17 @@ namespace UtegisEngine
         private Label recentProjectsLabel;
         private Button openProjectButton;
         private Button showAllProjectsButton;
-        private bool showingAllProjects = false;
 
+        private bool showingAllProjects = false;
+        private readonly ProjectManager _projectManager = new ProjectManager();
+        private readonly FileSystemService _fileSystemService = new FileSystemService();
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing)
             {
-                components.Dispose();
+                _projectManager.Dispose();
+                _fileSystemService.Dispose();
+                components?.Dispose();
             }
             base.Dispose(disposing);
         }
@@ -154,28 +159,20 @@ namespace UtegisEngine
         private void LoadProjectsList()
         {
             projectsListPanel.Controls.Clear();
+            var projectsData = _projectManager.LoadProjectsList();
 
-            string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            string projectsFile = Path.Combine(documentsPath, "UtegisEngine", "Projects.utall");
-
-            if (File.Exists(projectsFile))
+            if (projectsData?.Projects != null)
             {
-                string json = File.ReadAllText(projectsFile);
-                var projectsData = JsonConvert.DeserializeObject<ProjectsData>(json);
+                var sortedProjects = projectsData.Projects.Values
+                    .OrderByDescending(p => p.LastOpened)
+                    .ToList();
 
-                if (projectsData?.Projects != null)
+                showAllProjectsButton.Visible = sortedProjects.Count > 4;
+                int projectsToShow = showingAllProjects ? sortedProjects.Count : Math.Min(4, sortedProjects.Count);
+
+                for (int i = 0; i < projectsToShow; i++)
                 {
-                    var sortedProjects = projectsData.Projects.Values
-                        .OrderByDescending(p => p.LastOpened)
-                        .ToList();
-
-                    showAllProjectsButton.Visible = sortedProjects.Count > 4;
-                    int projectsToShow = showingAllProjects ? sortedProjects.Count : Math.Min(4, sortedProjects.Count);
-
-                    for (int i = 0; i < projectsToShow; i++)
-                    {
-                        AddProjectToPanel(sortedProjects[i]);
-                    }
+                    AddProjectToPanel(sortedProjects[i]);
                 }
             }
         }
@@ -229,36 +226,32 @@ namespace UtegisEngine
 
         private void OpenProjectButton_Click(object sender, EventArgs e)
         {
-            using (var folderDialog = new FolderBrowserDialog())
-            {
-                folderDialog.Description = "Выберите папку с проектом UtegisEngine";
-                if (folderDialog.ShowDialog() == DialogResult.OK)
-                {
-                    string projectSettingsPath = Path.Combine(folderDialog.SelectedPath, "ProjectSettings.uts");
-                    if (File.Exists(projectSettingsPath))
-                    {
-                        try
-                        {
-                            string json = File.ReadAllText(projectSettingsPath);
-                            var project = JsonConvert.DeserializeObject<ProjectSettings>(json);
-                            project.LastOpened = DateTime.Now;
+            var selectedPath = _fileSystemService.SelectFolder("Выберите папку с проектом UtegisEngine");
+            if (string.IsNullOrEmpty(selectedPath)) return;
 
-                            UpdateProjectInList(project);
-                            LoadProject(project);
-                            LoadProjectsList();
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show($"Ошибка при загрузке проекта: {ex.Message}", "Ошибка",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show("Выбранная папка не содержит проекта UtegisEngine",
-                            "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
-                }
+            string projectSettingsPath = Path.Combine(selectedPath, "ProjectSettings.uts");
+            if (!File.Exists(projectSettingsPath))
+            {
+                MessageBox.Show("Выбранная папка не содержит проекта UtegisEngine",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                string json = File.ReadAllText(projectSettingsPath);
+                var project = JsonConvert.DeserializeObject<ProjectSettings>(json);
+                if (project == null) return;
+
+                project.LastOpened = DateTime.Now;
+                _projectManager.UpdateProjectsList(project);
+                LoadProject(project);
+                LoadProjectsList();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при загрузке проекта: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

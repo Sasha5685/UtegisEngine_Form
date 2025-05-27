@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("UtegisEngine")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2ef24556e7659be90bc7c390e0a865730fcc3f37")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6652e7a04444e4ed13868236b5759930470530bd")]
 [assembly: System.Reflection.AssemblyProductAttribute("UtegisEngine")]
 [assembly: System.Reflection.AssemblyTitleAttribute("UtegisEngine")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

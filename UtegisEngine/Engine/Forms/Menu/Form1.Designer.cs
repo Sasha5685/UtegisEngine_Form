@@ -226,32 +226,22 @@ namespace UtegisEngine
 
         private void OpenProjectButton_Click(object sender, EventArgs e)
         {
-            var selectedPath = _fileSystemService.SelectFolder("Выберите папку с проектом UtegisEngine");
-            if (string.IsNullOrEmpty(selectedPath)) return;
-
-            string projectSettingsPath = Path.Combine(selectedPath, "ProjectSettings.uts");
-            if (!File.Exists(projectSettingsPath))
+            using (var folderDialog = new FolderBrowserDialog())
             {
-                MessageBox.Show("Выбранная папка не содержит проекта UtegisEngine",
-                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            try
-            {
-                string json = File.ReadAllText(projectSettingsPath);
-                var project = JsonConvert.DeserializeObject<ProjectSettings>(json);
-                if (project == null) return;
-
-                project.LastOpened = DateTime.Now;
-                _projectManager.UpdateProjectsList(project);
-                LoadProject(project);
-                LoadProjectsList();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при загрузке проекта: {ex.Message}", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                folderDialog.Description = "Выберите папку с проектом UtegisEngine";
+                if (folderDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string projectSettingsPath = Path.Combine(folderDialog.SelectedPath, "ProjectSettings.uts");
+                    if (File.Exists(projectSettingsPath))
+                    {
+                        OpenProject(folderDialog.SelectedPath);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Выбранная папка не содержит проекта UtegisEngine",
+                            "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                }
             }
         }
 
@@ -282,32 +272,26 @@ namespace UtegisEngine
 
         private void LoadButton_Click(object sender, EventArgs e)
         {
-            var button = sender as Button;
-            string projectPath = button.Tag as string;
-
-            if (Directory.Exists(projectPath))
+            if (sender is Button button && button.Tag is string projectPath)
             {
-                try
-                {
-                    string projectSettingsPath = Path.Combine(projectPath, "ProjectSettings.uts");
-                    string json = File.ReadAllText(projectSettingsPath);
-                    var project = JsonConvert.DeserializeObject<ProjectSettings>(json);
-                    project.LastOpened = DateTime.Now;
-
-                    UpdateProjectInList(project);
-                    LoadProject(project);
-                    LoadProjectsList();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Ошибка при загрузке проекта: {ex.Message}", "Ошибка",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                OpenProject(projectPath);
             }
-            else
+        }
+
+
+
+        private void OpenProject(string projectPath)
+        {
+            try
             {
-                MessageBox.Show("Проект не найден по указанному пути",
-                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                var engineInterface = new EngineInteface(projectPath);
+                engineInterface.Show();
+                this.Hide(); // Скрываем стартовое окно
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Не удалось открыть проект: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
